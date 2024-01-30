@@ -75,7 +75,7 @@ except:
     print(f"No banners found. Proceeding.")
     pass
 ```
-We also create some functions to ensure element visibility and ensuring the programs interaction with them.
+We also create some functions to ensure element visibility and ensuring the programs interaction with those elements.
 
 ```Python
 def human_like_delay():
@@ -119,6 +119,15 @@ To let the code know when to stop, we must extract the number of job posts every
 
 ```Python
 no_of_jobs = int(wd.find_element(By.CSS_SELECTOR,"h1>span").get_attribute("innerText"))
+current_jobs = 0
+
+while current_jobs < no_of_jobs:
+    wait_for_jobs_to_load(wd, current_jobs)
+    current_jobs = len(wd.find_elements(By.CSS_SELECTOR, ".jobs-search__results-list li"))
+    # Here you can also add a break condition if the current_jobs does not change after scrolling
+    # This is a safety measure to prevent an infinite loop
+    if current_jobs >= no_of_jobs:
+        break
 
 # BROWSE ALL THE JOB POSTINGS
 i = 2
@@ -158,8 +167,15 @@ date = []
 job_link = []
 
 for job in jobs:
-    job_id0 = job.get_attribute('data-job-id')
-    job_id.append(job_id0)
+
+    entity_urn = job.find_element(By.CSS_SELECTOR, 'div').get_attribute('data-entity-urn')
+    if entity_urn:
+        job_id0 = entity_urn.split(':')[-1]
+        job_id.append(job_id0)
+    else:
+        job_id.append('N/A')
+
+    #main-content > section.two-pane-serp-page__results-list > ul > li:nth-child(3) > div
     
     job_title0 = job.find_element(By.CSS_SELECTOR,'h3').get_attribute('innerText')
     job_title.append(job_title0)
@@ -177,7 +193,7 @@ for job in jobs:
     job_link.append(job_link0)
 ```
 
-As for the second part of the extracting code, we will be extracting:  
+As for the second part of the extracting code, we will be getting:  
 
 Job description  
 Experience level  
@@ -191,116 +207,55 @@ seniority = []
 emp_type = []
 job_func = []
 industries = []
-max_words = 15
 
-for item in range(len(jobs)):
-    print(f"Processing item {item + 1}: {job_title[item]} at {company_name[item]}")
-    # clicking job to view job details
-    job_click_path = f"//*[@id='main-content']/section[2]/ul/li[{item}]/div/a"
-    
+jd_path = 'body > div.base-serp-page > div > section > div.details-pane__content.details-pane__content--show > div > section.core-section-container.my-3.description > div > div.description__text.description__text--rich > section > div'
+seniority_path = 'body > div.base-serp-page > div > section > div.details-pane__content.details-pane__content--show > div > section.core-section-container.my-3.description > div > ul > li:nth-child(1) > span'  
+emp_type_path = 'body > div.base-serp-page > div > section > div.details-pane__content.details-pane__content--show > div > section.core-section-container.my-3.description > div > ul > li:nth-child(2) > span'
+job_func_path = 'body > div.base-serp-page > div > section > div.details-pane__content.details-pane__content--show > div > section.core-section-container.my-3.description > div > ul > li:nth-child(3) > span'  
+industries_path = 'body > div.base-serp-page > div > section > div.details-pane__content.details-pane__content--show > div > section.core-section-container.my-3.description > div > ul > li:nth-child(4) > span'  
+show_more_button_path = 'body > div.base-serp-page > div > section > div.details-pane__content.details-pane__content--show > div > section.core-section-container.my-3.description > div > div > section > button.show-more-less-html__button.show-more-less-button.show-more-less-html__button--more.\!ml-0\.5'
+
+
+
+for i in range(len(jobs)):
     try:
-                element = WebDriverWait(wd, 10).until(EC.element_to_be_clickable((By.XPATH, job_click_path)))
-                wd.execute_script("arguments[0].scrollIntoView(true);", element)
-                element.click()
+        # Click the job to open the details - Use i to click the correct job
+        job = jobs[i]
+        job.click()
+        time.sleep(random.uniform(0.5, 2))  # Replace with human_like_delay if defined
 
-                # Additional wait, if needed, to ensure the page has loaded
-                WebDriverWait(wd, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR,'h3')))
-                
-                
-    except ElementClickInterceptedException:
-                print(f"Click intercepted for item {item+1}. Trying alternative.")
-                # Alternative click using ActionChains
-                ActionChains(wd).move_to_element(element).click().perform()
-
-    except TimeoutException:
-        print(f"Timeout waiting for clickable element for item {item+1}.")
-                
-    except Exception as e:
-                print(f"Error clicking item {item+1}: {e}")
-
-
-    # XPath for 'Show More' button
-    show_more_button_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/div/section/button[1]'
-
-    # Check if 'Show More' button is present and click it
-    try:
-        # Wait for the 'Show More' button to be clickable
-        show_more_button = WebDriverWait(wd, 5).until(EC.element_to_be_clickable((By.XPATH, show_more_button_path)))
+        show_more_button = WebDriverWait(wd, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, show_more_button_path)))
         show_more_button.click()
 
-        # EXTRACTING DATA FROM THE JOB POST
-        jd_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/div/section/div'
-        jd0 = job.find_element(By.XPATH, jd_path).get_attribute('innerText')
-        jd.append(jd0)
-        words = jd0.split()
-        first_15_words = " ".join(words[:max_words])
-        print(f"Appended job description for {[item+1]}: {first_15_words}")
+        # Extract job details
+        jd_element = wd.find_element(By.CSS_SELECTOR, jd_path)
+        jd_text = jd_element.text  # Use .text to get the text content
+        jd.append(jd_text)
 
+        seniority_element = wd.find_element(By.CSS_SELECTOR, seniority_path)
+        seniority_text = seniority_element.text
+        seniority.append(seniority_text)
 
-    except TimeoutException:
-        # Handle the case where the button is not clickable within the timeout
-        jd.append("NA")
-        print(f"Timeout waiting for 'Show More' button for {[item+1]}: {job_title[item]} at {company_name[item]}")
-    except NoSuchElementException:
-        # Handle the case where 'Show More' button does not exist
-        jd.append("NA")
-        print(f"No 'Show More' button found for this job listing {[item+1]}: {job_title[item]} at {company_name[item]}")
+        emp_type_element = wd.find_element(By.CSS_SELECTOR, emp_type_path)
+        emp_type_text = emp_type_element.text
+        emp_type.append(emp_type_text)
 
+        job_func_element = wd.find_element(By.CSS_SELECTOR, job_func_path)
+        job_func_text = job_func_element.text
+        job_func.append(job_func_text)
 
-    # EXTRACTING SENIORITTY
-    try:
-       seniority_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/ul/li[1]/span'
-       seniority0 = job.find_element(By.XPATH, seniority_path).get_attribute('innerText')
-       seniority.append(seniority0)
-       print(f"Appended seniority for {[item+1]}: {seniority0}")
-    
-    except NoSuchElementException:
-        seniority.append("NA")
-        print(f"Couldn't append seniority for {[item+1]}: {job_title[item]} at {company_name[item]}")
-       
-    
-    # EXTRACTING EMPLOYMENT TYPE
-    try:
-       emp_type_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/ul/li[2]/span'
-       emp_type0 = job.find_element(By.XPATH, emp_type_path).get_attribute('innerText')
-       emp_type.append(emp_type0)
-       print(f"Appended employment type for {[item+1]}: {emp_type0}")
-    
-    except NoSuchElementException:
-        emp_type.append("NA")
-        print(f"Couldn't append employment type for {[item+1]}: {job_title[item]} at {company_name[item]}")
-    
-    # EXTRACT DEPARTMENT
-    try:
-       job_func_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/ul/li[3]/span'
-       job_func_element = job.find_element(By.XPATH, job_func_path).get_attribute('innerText')
-       job_func.append(job_func_element)
-       print(f"Appended department for {[item+1]}: {job_func_element}")
-    
-    except NoSuchElementException:
-        job_func.append("NA")
-        print(f"Couldn't append department for {[item+1]}: {job_title[item]} at {company_name[item]}")
-    
-    
-    #  EXTRACT INDUSTRY
-    try:
-        industries_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/ul/li[4]/span'
-        industry_element = WebDriverWait(wd, 10).until(EC.visibility_of_element_located((By.XPATH, industries_path)))
-        industry_text = industry_element.get_attribute('innerText')
-        industries.append(industry_text)
-        print(f"Appended industry for {[item+1]}: {industry_text}")
-
-    except TimeoutException:
-        print(f"Timeout while trying to extract industry for {[item+1]}.")
-        industries.append("NA")
+        industries_element = wd.find_element(By.CSS_SELECTOR, industries_path)
+        industries_text = industries_element.text
+        industries.append(industries_text)
 
     except Exception as e:
+        # Append "NA" or any other placeholder if there's an error
+        jd.append("NA")
+        seniority.append("NA")
+        emp_type.append("NA")
+        job_func.append("NA")
         industries.append("NA")
-        print(f"Exception occurred for item {item + 1}: {e}")
-
-    except NoSuchElementException:
-            job_func.append("NA")
-            print(f"Couldn't append department for {[item+1]}: {job_title[item]} at {company_name[item]}")
+        print(f"Error extracting details for job {i+1}: {e}")
 ```
 
 ### 4. LOAD
