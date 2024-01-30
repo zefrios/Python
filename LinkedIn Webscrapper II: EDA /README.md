@@ -74,7 +74,7 @@ for keyword, count in top_french_keywords:
 
 This is what our final output would look like:  
 
-Top English Keywords:
+### Top English Keywords:  
 marketing: 81  
 experience: 53  
 canonical: 51  
@@ -86,7 +86,7 @@ technology: 28
 business: 28  
 content: 28  
 
-Top French Keywords:  
+### Top French Keywords:  
 marketing: 117  
 équipe: 68  
 communication: 45  
@@ -105,23 +105,19 @@ To finish this exercise, a good way to visualize these results would be a word c
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 
-# Assuming 'top_english_keywords' and 'top_french_keywords' are lists of tuples like [('word1', count1), ('word2', count2), ...]
 english_freq_dict = dict(english_keyword_counts)
 french_freq_dict = dict(french_keyword_counts)
 
-# Create a word cloud for English words
 wordcloud_en = WordCloud(width=800, height=400, background_color='white', color_func=lambda *args, **kwargs: 'blue').generate_from_frequencies(english_freq_dict)
-
-# Create a word cloud for French words
 wordcloud_fr = WordCloud(width=800, height=400, background_color='white', color_func=lambda *args, **kwargs: 'red').generate_from_frequencies(french_freq_dict)
 
-# Display the word clouds
 plt.figure(figsize=(30, 15))
 ```
 
 Do mind that the list provided (keyword_counts) needs to be a list of tuples for the code above to work.  
 
-Now, we visualize the Enlgish keywords:
+Now, we visualize the Enlgish keywords:  
+
 ```Python
 plt.subplot(1, 2, 1)
 plt.imshow(wordcloud_en, interpolation='bilinear')
@@ -129,6 +125,7 @@ plt.axis('off')
 plt.title('Top English Keywords')
 ```
 Then, the French keywords:  
+
 ```Python
 plt.subplot(1, 2, 2)
 plt.imshow(wordcloud_fr, interpolation='bilinear')
