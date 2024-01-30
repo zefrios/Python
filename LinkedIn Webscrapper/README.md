@@ -37,3 +37,34 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 import pandas as pd
 ```
+
+Filters were applied from LinkedIn as follows:
+
+Job searched: Marketing Automation.
+Location: Île-de-France, France.
+Experience: Entry level.
+Once these filters are applied onto the URL, it looked like this:
+
+```Python
+url = 'https://www.linkedin.com/jobs/search/?currentJobId=3744994460&distance=
+25&f_E=2&f_TPR=r2592000&geoId=104246759&keywords=Marketing%20Automation&origin=
+JOB_SEARCH_PAGE_JOB_FILTER&refresh=true'
+```
+Now, we setup chromedriver and assign it to an object called wd.
+
+```Python
+wd = webdriver.Chrome()
+wd.maximize_window()
+wd.get(url)
+time.sleep(2)
+```
+Once the browser opens, there might be some elements like log in and cookie banners that need to be removed before proceeding. We can achieve that adding:
+```Python
+try:
+    wd.find_element(By.XPATH, '//*[@id="artdeco-global-alert-container"]/div/section/div/div[2]/button[2]').click()
+    time.sleep(2)
+    wd.find_element(By.XPATH, '/html/body/div[3]/button').click()
+except:
+    print(f"No banners found. Proceeding.")
+    pass
+```
