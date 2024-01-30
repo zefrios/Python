@@ -211,53 +211,96 @@ job_func = []
 industries = []
 
 jd_path = 'body > div.base-serp-page > div > section > div.details-pane__content.details-pane__content--show > div > section.core-section-container.my-3.description > div > div.description__text.description__text--rich > section > div'
-seniority_path = 'body > div.base-serp-page > div > section > div.details-pane__content.details-pane__content--show > div > section.core-section-container.my-3.description > div > ul > li:nth-child(1) > span'  
-emp_type_path = 'body > div.base-serp-page > div > section > div.details-pane__content.details-pane__content--show > div > section.core-section-container.my-3.description > div > ul > li:nth-child(2) > span'
-job_func_path = 'body > div.base-serp-page > div > section > div.details-pane__content.details-pane__content--show > div > section.core-section-container.my-3.description > div > ul > li:nth-child(3) > span'  
-industries_path = 'body > div.base-serp-page > div > section > div.details-pane__content.details-pane__content--show > div > section.core-section-container.my-3.description > div > ul > li:nth-child(4) > span'  
-show_more_button_path = 'body > div.base-serp-page > div > section > div.details-pane__content.details-pane__content--show > div > section.core-section-container.my-3.description > div > div > section > button.show-more-less-html__button.show-more-less-button.show-more-less-html__button--more.\!ml-0\.5'
+seniority_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/ul/li[1]/span'  
+emp_type_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/ul/li[2]/span'
+job_func_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/ul/li[3]/span'  
+industries_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/ul/li[3]/span'  
+show_more_button_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/div/section/button[1]'
 
 
 
 for i in range(len(jobs)):
-    try:
-        # Click the job to open the details - Use i to click the correct job
-        job = jobs[i]
-        job.click()
-        time.sleep(random.uniform(0.5, 2))  # Replace with human_like_delay if defined
 
-        show_more_button = WebDriverWait(wd, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, show_more_button_path)))
-        show_more_button.click()
+    success = False  # Flag to track if the extraction was successful
+    attempts = 0  # Count the number of attempts for clicking the "Show More" button
+    
+    while not success and attempts < 3:
+        try:
+            # Click the job to open the details
+            job = jobs[i]
+            job.click()
+            highlight_element(wd, job, effect_time=1, color="red", border=3)
+            time.sleep(random.uniform(1, 3))  # Replace with human_like_delay if defined
 
-        # Extract job details
-        jd_element = wd.find_element(By.CSS_SELECTOR, jd_path)
-        jd_text = jd_element.text  # Use .text to get the text content
-        jd.append(jd_text)
+            # Attempt to find and click the "Show More" button
+            show_more_button = WebDriverWait(wd, 5).until(EC.element_to_be_clickable((By.XPATH, show_more_button_path)))
+            highlight_element(wd, show_more_button, effect_time=1, color="red", border=3)
+            show_more_button.click()
 
-        seniority_element = wd.find_element(By.CSS_SELECTOR, seniority_path)
-        seniority_text = seniority_element.text
-        seniority.append(seniority_text)
+            jd_element = wd.find_element(By.XPATH, jd_path)
+            highlight_element(wd, jd_element, effect_time=1, color="red", border=3)  # Highlight the jd_element, not jd_text
+            jd_text = jd_element.text
+            jd.append(jd_text)
+            print(f"Job description for job {i+1} appended successfully.")
 
-        emp_type_element = wd.find_element(By.CSS_SELECTOR, emp_type_path)
-        emp_type_text = emp_type_element.text
-        emp_type.append(emp_type_text)
+            seniority_element = wd.find_element(By.XPATH, seniority_path)
+            highlight_element(wd, seniority_element, effect_time=1, color="red", border=3)
+            seniority_text = seniority_element.text
+            seniority.append(seniority_text)
+            print(f"Seniority for job {i+1} appended successfully.")
 
-        job_func_element = wd.find_element(By.CSS_SELECTOR, job_func_path)
-        job_func_text = job_func_element.text
-        job_func.append(job_func_text)
+            emp_type_element = wd.find_element(By.XPATH, emp_type_path)
+            highlight_element(wd, emp_type, effect_time=1, color="red", border=3)
+            emp_type_text = emp_type_element.text
+            emp_type.append(emp_type_text)
+            print(f"Employment type for job {i+1} appended successfully.")
 
-        industries_element = wd.find_element(By.CSS_SELECTOR, industries_path)
-        industries_text = industries_element.text
-        industries.append(industries_text)
+            job_func_element = wd.find_element(By.XPATH, job_func_path)
+            highlight_element(wd, job_func_element, effect_time=1, color="red", border=3)
+            job_func_text = job_func_element.text
+            job_func.append(job_func_text)
+            print(f"Job function for job {i+1} appended successfully.")
 
-    except Exception as e:
-        # Append "NA" or any other placeholder if there's an error
+            industries_element = wd.find_element(By.XPATH, industries_path)
+            highlight_element(wd, industries_element, effect_time=1, color="red", border=3)
+            industries_text = industries_element.text
+            industries.append(industries_text)
+            print(f"Industries for job {i+1} appended successfully.")
+
+            success = True
+            
+        except TimeoutException:
+            attempts += 1  # Increment the attempt counter
+            print(f"Attempt {attempts}: Timeout waiting for details for job {i+1}, retrying...")
+
+            if attempts == 2:  # On the third attempt, try clicking the previous job first
+                if i > 0:  # Ensure there is a previous job to click
+                    previous_job = jobs[i-1]
+                    previous_job.click()
+                    time.sleep(random.uniform(1, 3))
+                    job.click()  # Click the current job again
+                    time.sleep(random.uniform(1, 3))
+
+        
+        except Exception as e:
+            jd.append("NA")
+            seniority.append("NA")
+            emp_type.append("NA")
+            job_func.append("NA")
+            industries.append("NA")
+            print(f"Error extracting details for job {i+1}: {e}")
+
+    if not success:
+        # Append "NA" or any other placeholder if extraction was not successful after 3 attempts
         jd.append("NA")
         seniority.append("NA")
         emp_type.append("NA")
         job_func.append("NA")
         industries.append("NA")
-        print(f"Error extracting details for job {i+1}: {e}")
+        print(f"Failed to extract details after 3 attempts for job {i+1}.")
+
+print(f"Job ID: {len(job_id)}, Date: {len(date)}, Company Name: {len(company_name)}, Job Title: {len(job_title)}, Location: {len(location)}, Description: {len(jd)}, Seniority: {len(seniority)}, Employment Type: {len(emp_type)}, Job Function: {len(job_func)}, Industry: {len(industries)}, Job Link: {len(job_link)}")
+
 ```
 
 ### 4. LOAD
