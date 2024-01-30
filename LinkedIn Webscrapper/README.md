@@ -11,6 +11,8 @@ The code is divided in four sections:
 3. Extract
 4. Load
 
+## CODE EXPLANATION
+
 ### 1. SETUP
 For the first part, we will use the Python selenium library to make web requests to Google Chrome. In this case, the driver used is Chromedriver. Note that we will also need to import modules like Webdriver so you can command a browser (like Chrome, Firefox, etc.) to perform various tasks such as opening a URL, clicking buttons, scraping web pages, etc. I used Visual Studio Code to run this section.
 
