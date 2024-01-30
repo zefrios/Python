@@ -38,12 +38,12 @@ import time
 import pandas as pd
 ```
 
-Filters were applied from LinkedIn as follows:
+Filters were applied from LinkedIn as follows:  
 
-Job searched: Marketing Automation.
-Location: Île-de-France, France.
-Experience: Entry level.
-Once these filters are applied onto the URL, it looked like this:
+Job searched: Marketing Automation.  
+Location: Île-de-France, France.  
+Experience: Entry level.  
+Once these filters are applied onto the URL, it looked like this:  
 
 ```Python
 url = 'https://www.linkedin.com/jobs/search/?currentJobId=3744994460&distance=
