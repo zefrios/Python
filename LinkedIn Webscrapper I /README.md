@@ -39,6 +39,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException, TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.remote.webelement import WebElement
+
 import time
 import random
 import pandas as pd
@@ -62,7 +64,7 @@ Now, we setup chromedriver and assign it to an object called wd.
 ```Python
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument("--lang=en-US")
-wd = webdriver.Chrome()
+wd = webdriver.Chrome(options=chrome_options)
 wd.maximize_window()
 wd.get(url)
 time.sleep(2)
@@ -77,9 +79,22 @@ except:
     print(f"No banners found. Proceeding.")
     pass
 ```
-We also create some functions to ensure element visibility and ensuring the programs interaction with those elements.
+We also create some functions to ensure element visibility abd ensure the program's interaction with those elements by highlighting them on interaction.
 
 ```Python
+def highlight_element(driver, element: WebElement, effect_time=2, color="yellow", border=5):
+    """Highlights (blinks) a Selenium Webdriver element"""
+    driver = element._parent
+
+    def apply_style(s):
+        driver.execute_script("arguments[0].setAttribute('style', arguments[1]);", element, s)
+
+    original_style = element.get_attribute('style')
+    apply_style(f"border: {border}px solid {color};")
+    time.sleep(effect_time)  # Keep the new style for a few seconds
+    apply_style(original_style)  # Revert to the original style
+
+
 def human_like_delay():
     time.sleep(random.uniform(2, 5))
 
