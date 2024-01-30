@@ -49,10 +49,12 @@ Filters were applied from LinkedIn as follows:
 Job searched: Marketing Automation.  
 Location: Île-de-France, France.  
 Experience: Entry level.  
+
 Once these filters are applied onto the URL, it looked like this:  
 
 ```
-url = 'https://www.linkedin.com/jobs/search?keywords=Marketing%20Automation&location=%C3%8Ele-de-France%2C%20France&locationId=&geoId=104246759&f_TPR=&f_E=2&position=1&pageNum=0'
+url = 'https://www.linkedin.com/jobs/search?keywords=Marketing%20Automation&
+location=%C3%8Ele-de-France%2C%20France&locationId=&geoId=104246759&f_TPR=&f_E=2&position=1&pageNum=0'
 
 ```
 Now, we setup chromedriver and assign it to an object called wd.
