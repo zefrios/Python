@@ -45,10 +45,10 @@ Location: Île-de-France, France.
 Experience: Entry level.  
 Once these filters are applied onto the URL, it looked like this:  
 
-```Python
-url = 'https://www.linkedin.com/jobs/search/?currentJobId=3744994460&distance=
+```
+url = "https://www.linkedin.com/jobs/search/?currentJobId=3744994460&distance=
 25&f_E=2&f_TPR=r2592000&geoId=104246759&keywords=Marketing%20Automation&origin=
-JOB_SEARCH_PAGE_JOB_FILTER&refresh=true'
+JOB_SEARCH_PAGE_JOB_FILTER&refresh=true"
 ```
 Now, we setup chromedriver and assign it to an object called wd.
 
@@ -68,3 +68,222 @@ except:
     print(f"No banners found. Proceeding.")
     pass
 ```
+
+### 2. BROWSE
+
+To let the code know when to stop, we must extract the number of job posts everytime we run the program. For that, we need to find the number from the HTML script. Next, the code to assign the number to a variable called no_of_jobs and the snippet to iterate through all of them, considering that there is a 25 job display limit per page. The code scrolls down the webpage to reveal more job postings and clicks on the ‘Next Page’ buttons at the bottom. Then, the code finds the list of all job postings and counts how many there are. We get the total number as an output.
+
+```Python
+no_of_jobs = int(wd.find_element(By.CSS_SELECTOR,"h1>span").get_attribute("innerText"))
+
+# BROWSE ALL THE JOB POSTINGS
+i = 2
+while i <= int(no_of_jobs/25)+1: 
+    wd.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    i = i + 1
+    try:
+        wd.find_element(By.XPATH, "/html/body/main/div/section/button").click()
+        time.sleep(5)
+    except:
+        pass
+        time.sleep(5)
+
+# FIND ALL THE JOBS
+job_lists = wd.find_element(By.CLASS_NAME,"jobs-search__results-list")
+jobs = job_lists.find_elements(By.TAG_NAME, "li") # return a list
+
+len(jobs)
+```
+
+### 3. EXTRACT
+
+This code will extract the following data:  
+
+Job title  
+Company  
+Location  
+When it was posted  
+Post’s URL  
+
+```Python
+job_id= []
+job_title = []
+company_name = []
+location = []
+date = []
+job_link = []
+
+for job in jobs:
+    job_id0 = job.get_attribute('data-job-id')
+    job_id.append(job_id0)
+    
+    job_title0 = job.find_element(By.CSS_SELECTOR,'h3').get_attribute('innerText')
+    job_title.append(job_title0)
+
+    company_name0 = job.find_element(By.CSS_SELECTOR,'h4').get_attribute('innerText')
+    company_name.append(company_name0)
+    
+    location0 = job.find_element(By.CSS_SELECTOR, 'div> span').get_attribute('innerText')
+    location.append(location0)
+    
+    date0 = job.find_element(By.CSS_SELECTOR,'div>div>time').get_attribute('datetime')
+    date.append(date0)
+    
+    job_link0 = job.find_element(By.CSS_SELECTOR,'a').get_attribute('href')
+    job_link.append(job_link0)
+```
+
+As for the second part of the extracting code, we will be extracting:  
+
+Job description  
+Experience level  
+Employment type  
+Job function  
+Industry  
+
+```Python
+jd = []
+seniority = []
+emp_type = []
+job_func = []
+industries = []
+max_words = 15
+
+for item in range(len(jobs)):
+    print(f"Processing item {item + 1}: {job_title[item]} at {company_name[item]}")
+    # clicking job to view job details
+    job_click_path = f"//*[@id='main-content']/section[2]/ul/li[{item}]/div/a"
+    
+    try:
+                element = WebDriverWait(wd, 10).until(EC.element_to_be_clickable((By.XPATH, job_click_path)))
+                wd.execute_script("arguments[0].scrollIntoView(true);", element)
+                element.click()
+
+                # Additional wait, if needed, to ensure the page has loaded
+                WebDriverWait(wd, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR,'h3')))
+                
+                
+    except ElementClickInterceptedException:
+                print(f"Click intercepted for item {item+1}. Trying alternative.")
+                # Alternative click using ActionChains
+                ActionChains(wd).move_to_element(element).click().perform()
+
+    except TimeoutException:
+        print(f"Timeout waiting for clickable element for item {item+1}.")
+                
+    except Exception as e:
+                print(f"Error clicking item {item+1}: {e}")
+
+
+    # XPath for 'Show More' button
+    show_more_button_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/div/section/button[1]'
+
+    # Check if 'Show More' button is present and click it
+    try:
+        # Wait for the 'Show More' button to be clickable
+        show_more_button = WebDriverWait(wd, 5).until(EC.element_to_be_clickable((By.XPATH, show_more_button_path)))
+        show_more_button.click()
+
+        # EXTRACTING DATA FROM THE JOB POST
+        jd_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/div/section/div'
+        jd0 = job.find_element(By.XPATH, jd_path).get_attribute('innerText')
+        jd.append(jd0)
+        words = jd0.split()
+        first_15_words = " ".join(words[:max_words])
+        print(f"Appended job description for {[item+1]}: {first_15_words}")
+
+
+    except TimeoutException:
+        # Handle the case where the button is not clickable within the timeout
+        jd.append("NA")
+        print(f"Timeout waiting for 'Show More' button for {[item+1]}: {job_title[item]} at {company_name[item]}")
+    except NoSuchElementException:
+        # Handle the case where 'Show More' button does not exist
+        jd.append("NA")
+        print(f"No 'Show More' button found for this job listing {[item+1]}: {job_title[item]} at {company_name[item]}")
+
+
+    # EXTRACTING SENIORITTY
+    try:
+       seniority_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/ul/li[1]/span'
+       seniority0 = job.find_element(By.XPATH, seniority_path).get_attribute('innerText')
+       seniority.append(seniority0)
+       print(f"Appended seniority for {[item+1]}: {seniority0}")
+    
+    except NoSuchElementException:
+        seniority.append("NA")
+        print(f"Couldn't append seniority for {[item+1]}: {job_title[item]} at {company_name[item]}")
+       
+    
+    # EXTRACTING EMPLOYMENT TYPE
+    try:
+       emp_type_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/ul/li[2]/span'
+       emp_type0 = job.find_element(By.XPATH, emp_type_path).get_attribute('innerText')
+       emp_type.append(emp_type0)
+       print(f"Appended employment type for {[item+1]}: {emp_type0}")
+    
+    except NoSuchElementException:
+        emp_type.append("NA")
+        print(f"Couldn't append employment type for {[item+1]}: {job_title[item]} at {company_name[item]}")
+    
+    # EXTRACT DEPARTMENT
+    try:
+       job_func_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/ul/li[3]/span'
+       job_func_element = job.find_element(By.XPATH, job_func_path).get_attribute('innerText')
+       job_func.append(job_func_element)
+       print(f"Appended department for {[item+1]}: {job_func_element}")
+    
+    except NoSuchElementException:
+        job_func.append("NA")
+        print(f"Couldn't append department for {[item+1]}: {job_title[item]} at {company_name[item]}")
+    
+    
+    #  EXTRACT INDUSTRY
+    try:
+        industries_path = '/html/body/div[1]/div/section/div[2]/div/section[1]/div/ul/li[4]/span'
+        industry_element = WebDriverWait(wd, 10).until(EC.visibility_of_element_located((By.XPATH, industries_path)))
+        industry_text = industry_element.get_attribute('innerText')
+        industries.append(industry_text)
+        print(f"Appended industry for {[item+1]}: {industry_text}")
+
+    except TimeoutException:
+        print(f"Timeout while trying to extract industry for {[item+1]}.")
+        industries.append("NA")
+
+    except Exception as e:
+        industries.append("NA")
+        print(f"Exception occurred for item {item + 1}: {e}")
+
+    except NoSuchElementException:
+            job_func.append("NA")
+            print(f"Couldn't append department for {[item+1]}: {job_title[item]} at {company_name[item]}")
+```
+
+### 4. LOAD
+
+Finally, the next snippet will transfer the appended elements into an Excel file. Note that in the last line the name of the file is set to the specific job search done at the time.
+
+```Python
+job_data = pd.DataFrame({'ID': job_id,
+'date': date,
+'company': company_name,
+'title': job_title,
+'location': location,
+'description': jd,
+'level': seniority,
+'type': emp_type,
+'function': job_func,
+'industry': industries,
+'link': job_link
+})
+# cleaning description column
+job_data['description'] = job_data['description'].str.replace('\n',' ')
+job_data.to_excel('LinkedInJobData_MarketingAutomation.xlsx', index = False)
+```
+
+We are all set. After this an Excel file will appear on a designated by user folder.  
+
+![Python_WebScrapperI_1](https://github.com/zefrios/Python/assets/83305620/782537a9-8efd-41ba-a690-4e1088e37792)
+
+
+**NOTE: This code was made for recreative purposes only. Please make sure that you can scrape the content from a website before.***
