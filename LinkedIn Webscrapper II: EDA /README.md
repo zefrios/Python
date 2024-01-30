@@ -124,6 +124,9 @@ plt.imshow(wordcloud_en, interpolation='bilinear')
 plt.axis('off')
 plt.title('Top English Keywords')
 ```
+![Python_WebScrapperII_1](https://github.com/zefrios/Python/assets/83305620/2473a9f2-d938-46ca-97c3-d1aee2040a05)
+
+
 Then, the French keywords:  
 
 ```Python
@@ -132,3 +135,4 @@ plt.imshow(wordcloud_fr, interpolation='bilinear')
 plt.axis('off')
 plt.title('Top French Keywords')
 ```
+![Python_WebScrapperII_2](https://github.com/zefrios/Python/assets/83305620/461dce8a-9491-4655-a724-6e3bb6462bef)
