@@ -287,4 +287,4 @@ We are all set. After this an Excel file will appear on a designated by user fol
 ![Python_WebScrapperI_1](https://github.com/zefrios/Python/assets/83305620/782537a9-8efd-41ba-a690-4e1088e37792)
 
 
-**NOTE: This code was made for recreative purposes only. Please make sure that you can scrape the content from a website before.***
+**NOTE: This code was made for recreative purposes only. Please make sure that you can scrape the content from a website before doing so.**
