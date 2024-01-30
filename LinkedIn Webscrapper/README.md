@@ -34,9 +34,13 @@ This code’s objective is to scrape jobs for a determined position from LinkedI
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException, TimeoutException
+from selenium.webdriver.common.action_chains import ActionChains
 import time
+import random
 import pandas as pd
 ```
 
@@ -48,13 +52,14 @@ Experience: Entry level.
 Once these filters are applied onto the URL, it looked like this:  
 
 ```
-url = "https://www.linkedin.com/jobs/search/?currentJobId=3744994460&distance=
-25&f_E=2&f_TPR=r2592000&geoId=104246759&keywords=Marketing%20Automation&origin=
-JOB_SEARCH_PAGE_JOB_FILTER&refresh=true"
+url = 'https://www.linkedin.com/jobs/search?keywords=Marketing%20Automation&location=%C3%8Ele-de-France%2C%20France&locationId=&geoId=104246759&f_TPR=&f_E=2&position=1&pageNum=0'
+
 ```
 Now, we setup chromedriver and assign it to an object called wd.
 
 ```Python
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument("--lang=en-US")
 wd = webdriver.Chrome()
 wd.maximize_window()
 wd.get(url)
@@ -70,6 +75,43 @@ except:
     print(f"No banners found. Proceeding.")
     pass
 ```
+We also create some functions to ensure element visibility and ensuring the programs interaction with them.
+
+```Python
+def human_like_delay():
+    time.sleep(random.uniform(2, 5))
+
+# Function to scroll down the page and wait for jobs to load
+def wait_for_jobs_to_load(wd, previous_job_count):
+    # Scroll to the bottom of the list to trigger loading
+    wd.find_element(By.TAG_NAME, 'body').send_keys(Keys.END)
+    
+    # Wait for the new jobs to load by checking the change in the number of listed jobs
+    try:
+        WebDriverWait(wd, 30).until(
+            lambda driver: len(driver.find_elements(By.CSS_SELECTOR, ".jobs-search__results-list li")) > previous_job_count
+        )
+    except TimeoutException:
+        print("Timed out waiting for jobs to load.")
+    time.sleep(1)  # A short sleep to ensure that all jobs are fully loaded
+
+# Ensure visibility of element and click
+def ensure_visibility_and_click(wd, xpath):
+    element = WebDriverWait(wd, 10).until(EC.element_to_be_clickable((By.XPATH, xpath)))
+    wd.execute_script("arguments[0].scrollIntoView(true);", element)
+    element.click()
+    human_like_delay()
+
+def wait_for_job_details(wd):
+    loading_indicator = (By.CSS_SELECTOR, 'loading-indicator-css-selector')  # Replace with actual loading indicator if applicable
+    try:
+        # Wait until the loading indicator is gone before scraping
+        WebDriverWait(wd, 10).until(EC.invisibility_of_element(loading_indicator))
+    except TimeoutException:
+        print("Loading indicator did not disappear - potential rate limiting.")
+```
+
+
 
 ### 2. BROWSE
 
