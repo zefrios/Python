@@ -345,6 +345,7 @@ We are all set. After this an Excel file will appear on a designated by user fol
 ![Python_WebScrapperI_1](https://github.com/zefrios/Python/assets/83305620/782537a9-8efd-41ba-a690-4e1088e37792)
 
 
-**NOTE: This code was made for recreative purposes only. Please make sure that you can scrape the content from a website before doing so.**
+**NOTE: This code was made for recreative purposes only. Please make sure that you can scrape the content from a website before doing so.**  
 
+***
 ## Continues in: [LinkedIn Webscrapper II: EDA](https://github.com/zefrios/Python/blob/e773ca174e49b0b901ddaa014e83d287d4a5f242/LinkedIn%20Webscrapper%20II%3A%20EDA%20/README.md)
