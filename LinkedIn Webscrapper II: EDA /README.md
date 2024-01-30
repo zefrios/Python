@@ -1,6 +1,6 @@
 # LinkedIn Webscrapper II: EDA
 
-Continuing our analysis from [LinkedIn Webscrapper I](https://github.com/zefrios/Python/blob/7fa73561137351b822d4717953d7d09b650edd54/LinkedIn%20Webscrapper%20I%20/README.md).
+Continuing our analysis from [LinkedIn Webscrapper I](https://github.com/zefrios/Python/blob/00ae963c0f73b9e8817d701f9899a4618ddcc766/LinkedIn%20Webscrapper%20I%20/README.md).
 
 ## Finding Keywords
 The following code uses the spacy Python library to detect LinkedIn job posts in French versus those in English. Then, as a final output we have the words with the highest count for both English and French job posts.
