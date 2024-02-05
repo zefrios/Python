@@ -9,8 +9,8 @@ import os
 
 def get_spotify_access_token():
 
-    client_id = "9eb9f4f54d494c6caff83f1848038e18"
-    client_secret = "f0467afb6c4c4b36b2723d9b525ad3a5"
+    client_id = "your_client_id"
+    client_secret = "your_client_secret"
     auth_url = "https://accounts.spotify.com/api/token"
     credentials_b64 = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
 
