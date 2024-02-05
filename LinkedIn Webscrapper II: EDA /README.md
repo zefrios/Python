@@ -116,7 +116,7 @@ plt.figure(figsize=(30, 15))
 
 Do mind that the list provided (keyword_counts) needs to be a list of tuples for the code above to work.  
 
-Now, we visualize the Enlgish keywords:  
+Now, we visualize the English keywords:  
 
 ```Python
 plt.subplot(1, 2, 1)
